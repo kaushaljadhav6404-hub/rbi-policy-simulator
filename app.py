@@ -23,7 +23,7 @@ if page == "Home":
     with col1:
         st.subheader("What is the Repo Rate?")
         st.write("The Repo Rate is the rate at which the Reserve Bank of India (RBI) lends money to commercial banks.")
-        st.info("**Current Benchmark Repo Rate:** ~6.50%")
+        st.info("**Current Benchmark Repo Rate:** 5.25%")
     with col2:
         st.subheader("Why It Matters")
         st.write("- **For Borrowers:** Higher rates mean higher EMIs.")
