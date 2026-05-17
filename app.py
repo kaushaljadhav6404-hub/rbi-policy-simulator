@@ -46,13 +46,27 @@ elif page == "EMI Calculator":
         tenure = st.number_input("Loan Tenure (Years)", min_value=1, value=15, step=1)
         
     st.divider()
-    st.subheader("Simulate RBI Policy Action")
+    st.subheader("Simulate RBI Policy Action & Bank Transmission")
     
-    rate_change_bps = st.slider("Repo Rate Change (in Basis Points)", min_value=-200, max_value=200, value=50, step=25)
-    new_rate = current_rate + (rate_change_bps / 100)
+    # Original slider for RBI action
+    rate_change_bps = st.slider("RBI Repo Rate Change (in Basis Points)", min_value=-200, max_value=200, value=50, step=25)
+    
+    # NEW SLIDER: Transmission Efficiency
+    transmission_pct = st.slider(
+        "Bank Transmission Efficiency (%)", 
+        min_value=0, max_value=100, value=70, step=10,
+        help="100% means the bank passes the entire RBI rate change to the customer. 70% means they absorb a portion of it to protect loan growth or margins."
+    )
+    
+    # New Math: Calculate how much of the rate actually reaches the customer
+    actual_rate_change = (rate_change_bps / 100) * (transmission_pct / 100)
+    new_rate = current_rate + actual_rate_change
     
     old_emi = calculate_emi(principal, current_rate, tenure)
     new_emi = calculate_emi(principal, new_rate, tenure)
+    
+    # Smart text box explaining the real-world bank action
+    st.info(f"🏦 **Real-World Bank Action:** The RBI changed rates by **{rate_change_bps} bps**, but because transmission is **{transmission_pct}%**, the bank only adjusted the customer's loan rate by **{actual_rate_change * 100:.0f} bps**.")
     
     st.write(f"**New Estimated Bank Interest Rate:** {new_rate:.2f}%")
     
@@ -60,7 +74,6 @@ elif page == "EMI Calculator":
     res_col1.metric("Original Monthly EMI", f"₹{old_emi:,.0f}")
     res_col2.metric("New Monthly EMI", f"₹{new_emi:,.0f}", f"{new_emi - old_emi:,.0f} change")
     res_col3.metric("Extra Yearly Outflow", f"₹{(new_emi - old_emi) * 12:,.0f}")
-
 # ---------------------------------------------------
 # SECTION 3 — BOND PRICE SIMULATOR
 # ---------------------------------------------------
