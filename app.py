@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from utils.calculators import calculate_emi, calculate_bond_price 
+from utils.calculators import calculate_emi, calculate_bond_price, fetch_live_repo_rate, generate_amortization_schedule
 
 # 1. Set up the page layout
 st.set_page_config(page_title="RBI Policy Simulator", layout="wide")
@@ -74,6 +74,28 @@ elif page == "EMI Calculator":
     res_col1.metric("Original Monthly EMI", f"₹{old_emi:,.0f}")
     res_col2.metric("New Monthly EMI", f"₹{new_emi:,.0f}", f"{new_emi - old_emi:,.0f} change")
     res_col3.metric("Extra Yearly Outflow", f"₹{(new_emi - old_emi) * 12:,.0f}")
+    st.divider()
+    
+    # Generate the schedule data table in the background
+    schedule_df = generate_amortization_schedule(principal, current_rate, new_rate, tenure)
+    
+    # Convert the DataFrame to a CSV format that Streamlit can download
+    csv_data = schedule_df.to_csv(index=False).encode('utf-8')
+    
+    # Create the download button
+    st.subheader("📥 Export Financial Model")
+    st.write("Download the complete month-by-month amortization schedule comparing the old rate vs. the newly transmitted rate.")
+    
+    st.download_button(
+        label="Download Amortization Schedule (CSV)",
+        data=csv_data,
+        file_name="RBI_Impact_Amortization_Schedule.csv",
+        mime="text/csv",
+    )
+    
+    # Optional: Let the user peek at the first 5 rows on the dashboard
+    with st.expander("Preview Amortization Data (First 5 Months)"):
+        st.dataframe(schedule_df.head(), use_container_width=True)
 # ---------------------------------------------------
 # SECTION 3 — BOND PRICE SIMULATOR
 # ---------------------------------------------------
